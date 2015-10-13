@@ -1,11 +1,15 @@
 import pandas as pa
 import numpy as np
+import random
 # import matplotlib.pyplot as py
 
 debug = True
 
 
-def getfeatures():
+def getfeatures(valfold=0):
+
+    print 'Getting features...'
+
     vitals = pa.read_csv(
         'Training_Dataset/id_time_vitals_train.csv',
         dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
@@ -23,12 +27,15 @@ def getfeatures():
         dtype={'ID': np.int32, 'LABEL': np.int32}
     )
 
-    feats = []
-    targets = []
+    trainfeats = []
+    traintargets = []
+
+    valfeats = []
+    valtargets = []
 
     win = 10
 
-    ids = ages['ID']
+    ids = np.asarray(ages['ID'])
 
     tvitals = [[] for i in xrange(np.max(ids))]
     tlabs = [[] for i in xrange(np.max(ids))]
@@ -43,21 +50,20 @@ def getfeatures():
         if i >= 3 and debug:
             break
 
-    for id in ids:
+    numfolds = 5
+    folds = [random.randint(0, numfolds-1)]
+
+    for it, id in enumerate(ids):
         ivitals = tvitals[id]
         ilabs = tlabs[id]
 
         ivitals = np.asarray(ivitals)
         ilabs = np.asarray(ilabs)
 
-        print ivitals.shape
-        print ilabs.shape
-
         feat = [[0 for i in xrange(32)] for j in xrange(win)]
         pres = [[0 for i in xrange(32)] for j in xrange(win)]
 
         target = np.int32(labels[labels['ID'] == id]['LABEL'][0])
-        print target
 
         for i in xrange(ivitals.shape[0]):
             feat = feat[1:]
@@ -76,23 +82,25 @@ def getfeatures():
                     feat[-1][j+ivitals.shape[1]] = ilabs[i][j]
                     pres[-1][j+ivitals.shape[1]] = 1
 
-            print feat[-1]
-            print pres[-1]
-
             cfeat = np.asarray(feat).flatten()
             cpres = np.asarray(pres).flatten()
 
-            feats.append(np.hstack((cfeat, cpres)))
-            targets.append(target)
+            if folds[it] != valfold:
+                trainfeats.append(np.hstack((cfeat, cpres)))
+                traintargets.append(target)
+            else:
+                valfeats.append(np.hstack((cfeat, cpres)))
+                valtargets.append(target)
 
         if debug:
             break
 
-    return feats, targets
+    return trainfeats, traintargets, valfeats, valtargets
 
 
 def main():
-    print 'Training'
+    tfeats, ttargets, vfeats, vtargets = getfeatures()
+    # print feats, targets
 
 if __name__ == '__main__':
     main()
