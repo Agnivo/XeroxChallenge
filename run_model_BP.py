@@ -1,12 +1,28 @@
 import pandas as pa
 import numpy as np
-import random
 # import matplotlib.pyplot as py
 
 debug = True
 
 
+def writecsvline(fileobj, array):
+    fileobj.write(','.join([str(i) for i in array])+'\n')
+
+
 def getfeatures(valfold=0):
+    '''
+    Extracts window features from the given time series and
+    saves them to the respective csv files.
+
+    Training features and validation features contain 641 columns each
+    denoting the 641 features.
+    Training targets and validation targets contain 3 columns each for
+    'ID', 'TIME', 'LABEL' and 'ICU'
+
+    Further you might want to normalize the features so that their
+    values lie between 0, 1.
+
+    '''
 
     print 'Getting features...'
 
@@ -27,33 +43,55 @@ def getfeatures(valfold=0):
         dtype={'ID': np.int32, 'LABEL': np.int32}
     )
 
-    trainfeats = []
-    traintargets = []
-
-    valfeats = []
-    valtargets = []
-
     win = 10
 
     ids = np.asarray(ages['ID'])
 
-    tvitals = [[] for i in xrange(np.max(ids))]
-    tlabs = [[] for i in xrange(np.max(ids))]
+    numfolds = 5
+    folds = np.random.randint(0, numfolds-1, np.max(ids)+1)
+
+    tvitals = [[] for i in xrange(np.max(ids)+1)]
+    tlabs = [[] for i in xrange(np.max(ids)+1)]
+    ttime = [[] for i in xrange(np.max(ids)+1)]
+    ticu = [[] for i in xrange(np.max(ids)+1)]
 
     for i, row in enumerate(vitals.iterrows()):
         tvitals[row[1]['ID'].astype(np.int32)].append(np.asarray(row[1][2:]))
-        if i >= 3 and debug:
+        ttime[row[1]['ID'].astype(np.int32)].\
+            append(row[1]['TIME'].astype(np.int32))
+        ticu[row[1]['ID'].astype(np.int32)].\
+            append(row[1]['ICU'].astype(np.int32))
+        if i >= 100 and debug:
             break
 
     for i, row in enumerate(labs.iterrows()):
         tlabs[row[1]['ID'].astype(np.int32)].append(np.asarray(row[1][2:]))
-        if i >= 3 and debug:
+        if i >= 100 and debug:
             break
 
-    numfolds = 5
-    folds = [random.randint(0, numfolds-1)]
+    trainfeats = open('train_feats.csv', 'w')
+    traintargets = open('train_targets.csv', 'w')
+
+    valfeats = open('validation_feats.csv', 'w')
+    valtargets = open('validation_targets.csv', 'w')
+
+    traintargets.write('ID,TIME,LABEL,ICU\n')
+    valtargets.write('ID,TIME,LABEL,ICU\n')
+
+    for i in xrange(641):
+        if i < 640:
+            trainfeats.write('feat{0},'.format(i))
+            valfeats.write('feat{0},'.format(i))
+        else:
+            trainfeats.write('feat{0}'.format(i))
+            valfeats.write('feat{0}'.format(i))
+
+    trainfeats.write('\n')
+    valfeats.write('\n')
 
     for it, id in enumerate(ids):
+
+        print 'Doing', id
         ivitals = tvitals[id]
         ilabs = tlabs[id]
 
@@ -63,9 +101,13 @@ def getfeatures(valfold=0):
         feat = [[0 for i in xrange(32)] for j in xrange(win)]
         pres = [[0 for i in xrange(32)] for j in xrange(win)]
 
-        target = np.int32(labels[labels['ID'] == id]['LABEL'][0])
+        target = np.int32(labels[labels['ID'] == id]['LABEL'])[0]
+        age = np.int32(ages[ages['ID'] == id]['AGE'])[0]
 
         for i in xrange(ivitals.shape[0]):
+            time = ttime[id][i]
+            icu = ticu[id][i]
+
             feat = feat[1:]
             pres = pres[1:]
 
@@ -86,20 +128,25 @@ def getfeatures(valfold=0):
             cpres = np.asarray(pres).flatten()
 
             if folds[it] != valfold:
-                trainfeats.append(np.hstack((cfeat, cpres)))
-                traintargets.append(target)
+                writecsvline(trainfeats, np.hstack((cfeat, cpres, [age])))
+                writecsvline(traintargets, [id, time, target, icu])
             else:
-                valfeats.append(np.hstack((cfeat, cpres)))
-                valtargets.append(target)
+                writecsvline(valfeats, np.hstack((cfeat, cpres, [age])))
+                writecsvline(valtargets, [id, time, target, icu])
 
-        if debug:
+        if debug and id > 2:
             break
 
-    return trainfeats, traintargets, valfeats, valtargets
+    trainfeats.close()
+    traintargets.close()
+    valfeats.close()
+    valtargets.close()
 
 
 def main():
-    tfeats, ttargets, vfeats, vtargets = getfeatures()
+    getfeatures()
+
+    # print tfeats.shape, ttargets.shape, vfeats.shape, vtargets.shape
     # print feats, targets
 
 if __name__ == '__main__':
