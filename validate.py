@@ -134,14 +134,19 @@ def validate() :
 	print "accuracy : ", accuracy, "median prediction time : ", medianPredictionTime
 	finalScore = 0
 	if specificity < 0.99 or sensitivity == 0 or medianPredictionTime < 5 :
+		print "specificity < 0.99 or sensitivity = 0 or medianPredictionTime < 5"
 		finalScore = 0
 	elif checkAllLabels(predictedData) == 1 :
+		print "All labels either 0 or 1"
 		finalScore = 0
 	elif checkAllPredicted(finalPrediction) == 1 :
+		print "All patients predicted as 1"
 		finalScore = 0
 	elif checkAllICUFlags(predictedData) == 1 :
+		print "For all examples with ICU Flag = 1, prediction = 1"
 		finalScore = 0
 	elif checkOnlyICUFlags(predictedData) == 1 :
+		print "Only ICU flag == 1 examples have prediction = 1"
 		finalScore = 0
 	else :
 		sensitivityScore = sensitivity
