@@ -3,6 +3,13 @@ import numpy as np
 import sys
 import statistics
 
+''' Usage : python validate.py Predicted.csv Training_Dataset/actualLabel.csv
+	Format of Predicted.csv : ID,TIME,ICU,LABEL
+	Actual Labels read from Training_Dataset/actualLabel.csv, Format : ID,LABEL
+'''
+
+debug = False
+
 ''' Assuming 1. All the prediction labels are either 0 or 1 <=> 
 	All labels over all predictions are either 0 or 1
 '''
@@ -55,11 +62,11 @@ def validate() :
 			)
 
 	actualData = pa.read_csv(
-        'Training_Dataset/id_label_train.csv',
+        sys.argv[2],
         dtype={'ID': np.int32, 'LABEL': np.int32}
     )
 
-	ids = np.asarray(actualData['ID'])
+	ids = np.asarray(predictedData['ID'])
 	minTime = np.max(np.asarray(predictedData['TIME'])) + 1
 	maxTime = 0
 	finalPrediction = {}
@@ -67,7 +74,7 @@ def validate() :
 	maxTimes = {}
 	finalPredictedTrue = []
 
-	for i in np.nditer(ids) :
+	for (x, i) in np.ndenumerate(ids) :
 		finalPrediction[i] = 0
 		minTimes[i] = minTime
 		maxTimes[i] = maxTime
@@ -83,7 +90,7 @@ def validate() :
 				finalPredictedTrue.append(row[1]['ID'])
 
 	predictionTime = {}
-	for i in np.nditer(ids) :			
+	for (x, i) in np.ndenumerate(ids) :
 		if i not in finalPredictedTrue :
 			predictionTime[i] = -1
 		else :
@@ -93,8 +100,8 @@ def validate() :
 	for i, row in enumerate(actualData.iterrows()) :
 		actualLabels[row[1]['ID']] = row[1]['LABEL']
 
-	tp = 0, tn = 0, fp = 0, fn = 0
-	for i in np.nditer(ids) :
+	tp = tn = fp = fn = 0
+	for (x, i) in np.ndenumerate(ids) :
 		if actualLabels[i] == 1 and finalPrediction[i] == 1 :
 			tp += 1
 		if actualLabels[i] == 0 and finalPrediction[i] == 0 :
@@ -104,14 +111,22 @@ def validate() :
 		if actualLabels[i] == 1 and finalPrediction[i] == 0 :
 			fn += 1
 
-	sensitivity = (float(tp)/(tp + fn))
-	specificity = (float(tn)/(tn + fp))
+	print "tp : ", tp, ", tn : ", tn, ", fp : ", fp, ", fn : ", fn
+	if tp + fn != 0 :
+		sensitivity = (float(tp)/(tp + fn))
+	else :
+		sensitivity = 0
+	if tn + fp != 0 :
+		specificity = (float(tn)/(tn + fp))
+	else :
+		specificity = 0
 	accuracy = (float(tp + tn)/(tp + tn + fp + fn))
 
 	predictionTimesList = []
 	for i in predictionTime :
 		if predictionTime[i] != -1 :
 			predictionTimesList.append(predictionTime[i])
+	# print predictionTimesList
 
 	medianPredictionTime = statistics.median(predictionTimesList)
 
@@ -120,13 +135,13 @@ def validate() :
 	finalScore = 0
 	if specificity < 0.99 or sensitivity == 0 or medianPredictionTime < 5 :
 		finalScore = 0
-	else if checkAllLabels(predictedData) == 1 :
+	elif checkAllLabels(predictedData) == 1 :
 		finalScore = 0
-	else if checkAllPredicted(finalPrediction) == 1 :
+	elif checkAllPredicted(finalPrediction) == 1 :
 		finalScore = 0
-	else if checkAllICUFlags(predictedData) == 1 :
+	elif checkAllICUFlags(predictedData) == 1 :
 		finalScore = 0
-	else if checkOnlyICUFlags(predictedData) == 1 :
+	elif checkOnlyICUFlags(predictedData) == 1 :
 		finalScore = 0
 	else :
 		sensitivityScore = sensitivity
@@ -140,7 +155,31 @@ def validate() :
 	print "finalScore : ", finalScore
 	return sensitivity, specificity, accuracy, medianPredictionTime, finalScore
 
+def writecsvline(fileobj, ids, times, icus, labels):
+    fileobj.write("ID,TIME,ICU,LABEL\n")
+    for i in range(ids.size) :
+    	fileobj.write(str(ids[i]) + "," + str(times[i]) + "," + str(icus[i]) + "," + str(labels[i]) + "\n")
+
+def testCode() :
+	originalData = pa.read_csv(
+		'Training_Dataset/id_time_vitals_train.csv',
+        dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
+	)
+
+	ids = np.asarray(originalData['ID'][:1000])
+	times = np.asarray(originalData['TIME'][:1000])
+	icus = np.asarray(originalData['ICU'][:1000])
+	labels = np.random.randint(0, 2, ids.size)
+	print ids.size, times.size, icus.size, labels.size
+	for i in range(ids.size) :
+		if ids[i] == 5 :
+			labels[i] = 0
+	testFile =  open('Test.csv', 'w')
+	writecsvline(testFile, ids, times, icus, labels)
+
 def main() :
+	if debug == True :
+		testCode()
 	validate()
 
 if __name__ == "__main__" :
