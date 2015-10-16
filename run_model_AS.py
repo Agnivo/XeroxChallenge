@@ -100,7 +100,10 @@ def getfeatures(valfold=0):
 
 def main():
     tfeats, ttargets, vfeats, vtargets = getfeatures()
-    # print feats, targets
+    print feats
+    print targets
+    print tfeats
+    print ttargets
 
 if __name__ == '__main__':
     main()
