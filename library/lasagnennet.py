@@ -34,21 +34,16 @@ class nnet:
         self, n_in, n_out, h_layers,
         i_drop=None,
         l_drops=None,
-        lam=0, Temp=1,
-        inp_max=False,
+        lam=0,
         nonlinearity=L.nonlinearities.sigmoid
     ):
 
-        if not inp_max:
-            self.input = T.fmatrix('input')
-        else:
-            self.input = TH.shared('input')
-
+        self.input = T.fmatrix('input')
         self.layers = []
 
         l_in = L.layers.InputLayer(shape=(None, n_in), input_var=self.input)
 
-        if i_drop is not None and not inp_max:
+        if i_drop is not None:
             curr = L.layers.DropoutLayer(l_in, p=i_drop, rescale=True)
         else:
             curr = l_in
@@ -64,15 +59,12 @@ class nnet:
                 b=L.init.Constant(0.0)
             )
             self.layers.append(curr)
-            if not inp_max:
-                if l_drops is not None and l_drops[i] is not None:
-                    curr = L.layers.DropoutLayer(
-                        curr, p=l_drops[i], rescale=True
-                    )
+            if l_drops is not None and l_drops[i] is not None:
+                curr = L.layers.DropoutLayer(
+                    curr, p=l_drops[i], rescale=True
+                )
 
-        final_nonlinearity = L.nonlinearities.softmax
-        if Temp != 1:
-            final_nonlinearity = scaled_softmax(Temp)
+        final_nonlinearity = L.nonlinearities.sigmoid
 
         self.output_layer = L.layers.DenseLayer(
             curr, num_units=n_out,
@@ -157,7 +149,7 @@ class nnet:
         cnt = 0
         for bx, by in batch_iterable(x, y, batch_size):
             c_out, = self.tester(bx)
-            c_acc = np.mean(np.argmax(c_out, axis=1) == np.argmax(by, axis=1))
+            c_acc = np.mean(c_out[0] == by)
             acc += c_acc
             cnt += 1
 

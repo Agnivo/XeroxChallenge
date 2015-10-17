@@ -2,14 +2,21 @@ import pandas as pa
 import numpy as np
 # import matplotlib.pyplot as py
 
-debug = True
+debug = False
 
 
 def writecsvline(fileobj, array):
-    fileobj.write(','.join([str(i) for i in array])+'\n')
+    fileobj.write(','.join([str(i) for i in array]) + '\n')
 
 
-def getfeatures(valfold=0):
+def getfeatures(
+    vital_file='Training_Dataset/id_time_vitals_train.csv',
+    lab_file='Training_Dataset/id_time_labs_train.csv',
+    age_file='Training_Dataset/id_age_train.csv',
+    label_file='Training_Dataset/id_label_train.csv',
+    prefix='',
+    valfold=0
+):
     '''
     Extracts window features from the given time series and
     saves them to the respective csv files.
@@ -27,19 +34,19 @@ def getfeatures(valfold=0):
     print 'Getting features...'
 
     vitals = pa.read_csv(
-        'Training_Dataset/id_time_vitals_train.csv',
+        vital_file,
         dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
     )
     labs = pa.read_csv(
-        'Training_Dataset/id_time_labs_train.csv',
+        lab_file,
         dtype={'ID': np.int32, 'TIME': np.int32}
     )
     ages = pa.read_csv(
-        'Training_Dataset/id_age_train.csv',
+        age_file,
         dtype={'ID': np.int32, 'AGE': np.int32}
     )
     labels = pa.read_csv(
-        'Training_Dataset/id_label_train.csv',
+        label_file,
         dtype={'ID': np.int32, 'LABEL': np.int32}
     )
 
@@ -48,12 +55,12 @@ def getfeatures(valfold=0):
     ids = np.asarray(ages['ID'])
 
     numfolds = 5
-    folds = np.random.randint(0, numfolds-1, np.max(ids)+1)
+    folds = np.random.randint(0, numfolds - 1, np.max(ids) + 1)
 
-    tvitals = [[] for i in xrange(np.max(ids)+1)]
-    tlabs = [[] for i in xrange(np.max(ids)+1)]
-    ttime = [[] for i in xrange(np.max(ids)+1)]
-    ticu = [[] for i in xrange(np.max(ids)+1)]
+    tvitals = [[] for i in xrange(np.max(ids) + 1)]
+    tlabs = [[] for i in xrange(np.max(ids) + 1)]
+    ttime = [[] for i in xrange(np.max(ids) + 1)]
+    ticu = [[] for i in xrange(np.max(ids) + 1)]
 
     for i, row in enumerate(vitals.iterrows()):
         tvitals[row[1]['ID'].astype(np.int32)].append(np.asarray(row[1][2:]))
@@ -69,11 +76,11 @@ def getfeatures(valfold=0):
         if i >= 100 and debug:
             break
 
-    trainfeats = open('train_feats.csv', 'w')
-    traintargets = open('train_targets.csv', 'w')
+    trainfeats = open(prefix+'train_feats.csv', 'w')
+    traintargets = open(prefix+'train_targets.csv', 'w')
 
-    valfeats = open('validation_feats.csv', 'w')
-    valtargets = open('validation_targets.csv', 'w')
+    valfeats = open(prefix+'validation_feats.csv', 'w')
+    valtargets = open(prefix+'validation_targets.csv', 'w')
 
     traintargets.write('ID,TIME,LABEL,ICU\n')
     valtargets.write('ID,TIME,LABEL,ICU\n')
@@ -121,8 +128,8 @@ def getfeatures(valfold=0):
 
             for j in xrange(ilabs.shape[1]):
                 if not np.isnan(ilabs[i][j]):
-                    feat[-1][j+ivitals.shape[1]] = ilabs[i][j]
-                    pres[-1][j+ivitals.shape[1]] = 1
+                    feat[-1][j + ivitals.shape[1]] = ilabs[i][j]
+                    pres[-1][j + ivitals.shape[1]] = 1
 
             cfeat = np.asarray(feat).flatten()
             cpres = np.asarray(pres).flatten()
