@@ -187,7 +187,7 @@ def writecsvline(fileobj, ids, times, icus, labels):
     for i in range(ids.size):
         fileobj.write(str(ids[i]) + "," + str(times[i]) +
                       "," + str(icus[i]) + "," + str(labels[i]) + "\n")
-    close(fileObj)
+    fileobj.close()
 
 
 def testCode():
