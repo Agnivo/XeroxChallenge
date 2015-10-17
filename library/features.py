@@ -34,20 +34,16 @@ def getfeatures(
     print 'Getting features...'
 
     vitals = pa.read_csv(
-        vital_file,
-        dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
+        vital_file
     )
     labs = pa.read_csv(
-        lab_file,
-        dtype={'ID': np.int32, 'TIME': np.int32}
+        lab_file
     )
     ages = pa.read_csv(
-        age_file,
-        dtype={'ID': np.int32, 'AGE': np.int32}
+        age_file
     )
     labels = pa.read_csv(
-        label_file,
-        dtype={'ID': np.int32, 'LABEL': np.int32}
+        label_file
     )
 
     win = 10
@@ -119,7 +115,8 @@ def getfeatures(
             pres = pres[1:]
 
             pres.append([0 for j in xrange(32)])
-            feat.append([0 for j in xrange(32)])
+            # feat.append([0 for j in xrange(32)])
+            feat.append(feat[-1])
 
             for j in xrange(ivitals.shape[1]):
                 if not np.isnan(ivitals[i][j]):

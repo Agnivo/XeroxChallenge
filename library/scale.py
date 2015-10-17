@@ -12,7 +12,7 @@ def testCode():
 
 
 def writeCSV(fileObj, feats, columns):
-    for i in len(columns):
+    for i in xrange(len(columns)):
         if i < len(columns)-1:
             fileObj.write(str(columns[i]) + ",")
         else:

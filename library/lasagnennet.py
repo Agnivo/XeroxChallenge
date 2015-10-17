@@ -83,8 +83,9 @@ class nnet:
         for par in regs[1:]:
             self.reg += T.sum(par * par)
 
-        self.loss = L.objectives.categorical_crossentropy(
-            self.output, self.target
+        self.loss = -(
+            1.0*self.target * T.log(self.output) +
+            0.1*(1 - self.target) * T.log(1 - self.output)
         )
 
         self.loss = T.mean(self.loss) + lam * self.reg
