@@ -187,11 +187,12 @@ def writecsvline(fileobj, ids, times, icus, labels):
     for i in range(ids.size):
         fileobj.write(str(ids[i]) + "," + str(times[i]) +
                       "," + str(icus[i]) + "," + str(labels[i]) + "\n")
+    close(fileObj)
 
 
 def testCode():
     originalData = pa.read_csv(
-        'Training_Dataset/id_time_vitals_train.csv',
+        '../Training_Dataset/id_time_vitals_train.csv',
         dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
     )
 
