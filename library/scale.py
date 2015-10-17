@@ -1,7 +1,6 @@
 import pandas as pa
 import numpy as np
 import sys
-import statistics
 import math
 
 debug = False
@@ -13,8 +12,12 @@ def testCode():
 
 
 def writeCSV(fileObj, feats, columns):
-    for column in columns:
-        fileObj.write(str(column) + ",")
+    for i in len(columns):
+        if i < len(columns)-1:
+            fileObj.write(str(columns[i]) + ",")
+        else:
+            fileObj.write(str(columns[i]))
+
     fileObj.write('\n')
     for i in range(len(feats['ID'])):
         for j in range(len(columns)):
@@ -28,15 +31,15 @@ def writeCSV(fileObj, feats, columns):
 
 def scale():
     vitals = pa.read_csv(
-        '../Training_Dataset/id_time_vitals_train.csv',
+        'Training_Dataset/id_time_vitals_train.csv',
         dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
     )
     labs = pa.read_csv(
-        '../Training_Dataset/id_time_labs_train.csv',
+        'Training_Dataset/id_time_labs_train.csv',
         dtype={'ID': np.int32, 'TIME': np.int32}
     )
     ages = pa.read_csv(
-        '../Training_Dataset/id_age_train.csv',
+        'Training_Dataset/id_age_train.csv',
         dtype={'ID': np.int32, 'AGE': np.int32}
     )
 
@@ -76,7 +79,7 @@ def scale():
         if len(finiteValList) == 0:
             print vitalColumn, "is all NA"
             continue
-        meanValue = statistics.mean(finiteValList)
+        meanValue = np.mean(np.asarray(finiteValList))
         maxValue = max(finiteValList)
         print "Column : ", vitalColumn,\
             "max Value : ", maxValue,\
@@ -99,7 +102,7 @@ def scale():
             for i in range(len(vitalFeats[vitalColumn])):
                 if np.isnan(vitalFeats[vitalColumn][i]) == 0:
                     finiteValList.append(vitalFeats[vitalColumn][i])
-            meanVal = statistics.mean(finiteValList)
+            meanVal = np.mean(np.asarray(finiteValList))
             maxVal = max(finiteValList)
             print "Column : ", vitalColumn,\
                 "Mean by Max ratio : ", (float(meanVal) / maxVal)
@@ -121,7 +124,7 @@ def scale():
         for i in range(len(labFeats[labColumn])):
             if np.isnan(labFeats[labColumn][i]) == 0:
                 finiteValList.append(labFeats[labColumn][i])
-        meanValue = statistics.mean(finiteValList)
+        meanValue = np.mean(np.asarray(finiteValList))
         maxValue = max(finiteValList)
         if len(finiteValList) == 0:
             print labColumn, "is all NA"
@@ -147,7 +150,7 @@ def scale():
             for i in range(len(labFeats[labColumn])):
                 if np.isnan(labFeats[labColumn][i]) == 0:
                     finiteValList.append(labFeats[labColumn][i])
-            meanVal = statistics.mean(finiteValList)
+            meanVal = np.mean(np.asarray(finiteValList))
             maxVal = max(finiteValList)
             print "Column : ", labColumn,\
                 "Mean by Max ratio : ", (float(meanVal) / maxVal)
@@ -171,13 +174,13 @@ def scale():
         if np.isnan(ageFeats['AGE'][i]) == 0:
             ageFeats['AGE'][i] /= float(ageFeatMax)
 
-    ageFeatsFile = open("../Training_Dataset/age_train.csv", 'w')
+    ageFeatsFile = open("Training_Dataset/age_train.csv", 'w')
     writeCSV(ageFeatsFile, ageFeats, ageColumns)
 
-    labFeatsFile = open("../Training_Dataset/lab_train.csv", 'w')
+    labFeatsFile = open("Training_Dataset/lab_train.csv", 'w')
     writeCSV(labFeatsFile, labFeats, labColumns)
 
-    vitalFeatsFile = open("../Training_Dataset/vital_train.csv", 'w')
+    vitalFeatsFile = open("Training_Dataset/vital_train.csv", 'w')
     writeCSV(vitalFeatsFile, vitalFeats, vitalColumns)
 
 
