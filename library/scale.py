@@ -12,11 +12,14 @@ def testCode() :
 
 def writeCSV(fileObj, feats, columns) :
 	for column in columns :
-		fileObj.write(column + ",")
+		fileObj.write(str(column) + ",")
 	fileObj.write('\n')
 	for i in range(len(feats['ID'])) :
-		for column in columns :
-			fileObj.write(feats[column][i] + ',')
+		for j in range(len(columns)) :
+			if j != len(columns) - 1 :
+				fileObj.write(str(feats[columns[j]][i]) + ',')
+			else :
+				fileObj.write(str(feats[columns[j]][i]))
 		fileObj.write('\n')
 	fileObj.close()
 
@@ -91,7 +94,7 @@ def scale() :
 			print "Column : ", vitalColumn, "Mean by Max ratio : ", (float(meanVal)/maxVal)
 			for i in range(len(vitalFeats[vitalColumn])) :
 				if np.isnan(vitalFeats[vitalColumn][i]) == 0 :
-					vitalFeats[vitalColumn][i] /= maxVal
+					vitalFeats[vitalColumn][i] /= float(maxVal)
 		else :
 			print "Column : ", vitalColumn, "Mean by Max ratio : ", (float(meanValue)/maxValue)
 			for i in range(len(vitalFeats[vitalColumn])) :
@@ -132,24 +135,29 @@ def scale() :
 			print "Column : ", labColumn, "Mean by Max ratio : ", (float(meanVal)/maxVal)
 			for i in range(len(labFeats[labColumn])) :
 				if np.isnan(labFeats[labColumn][i]) == 0 :
-					labFeats[labColumn][i] /= maxVal
+					labFeats[labColumn][i] /= float(maxVal)
 		else :
 			print "Column : ", labColumn, "Mean by Max ratio : ", (float(meanValue)/maxValue)
 			for i in range(len(labFeats[labColumn])) :
 				if np.isnan(labFeats[labColumn][i]) == 0 :
 					labFeats[labColumn][i] = (float(labFeats[labColumn][i])/maxValue)
 
-	ageFeatMax = max(ageFeats['AGE'])
+	finiteValList = []
 	for i in range(len(ageFeats['AGE'])) :
-		ageFeats['AGE'][i] /= ageFeatMax
+		if np.isnan(ageFeats['AGE'][i]) == 0 :
+			finiteValList.append(ageFeats['AGE'][i])
+	ageFeatMax = max(finiteValList)
+	for i in range(len(ageFeats['AGE'])) :
+		if np.isnan(ageFeats['AGE'][i]) == 0 :
+			ageFeats['AGE'][i] /= float(ageFeatMax)
 
-	ageFeatsFile = open("Training_Dataset/age_train.csv", 'w')
+	ageFeatsFile = open("../Training_Dataset/age_train.csv", 'w')
 	writeCSV(ageFeatsFile, ageFeats, ageColumns)
 
-	labFeatsFile = open("Training_Dataset/lab_train.csv", 'w')
+	labFeatsFile = open("../Training_Dataset/lab_train.csv", 'w')
 	writeCSV(labFeatsFile, labFeats, labColumns)
 
-	vitalFeatsFile = open("Training_Dataset/vital_train.csv", 'w')
+	vitalFeatsFile = open("../Training_Dataset/vital_train.csv", 'w')
 	writeCSV(vitalFeatsFile, vitalFeats, vitalColumns)
 
 def main() :
