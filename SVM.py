@@ -1,4 +1,3 @@
-from library import lasagnennet as LN
 from library import features as F
 from library import scale as S
 from library import validate as V
@@ -6,9 +5,8 @@ from sklearn import svm
 from sklearn.metrics import roc_curve
 
 import numpy as np
-import theano as TH
 import pandas as pa
-import lasagne as L
+import theano as TH
 
 
 def main():
@@ -30,20 +28,20 @@ def main():
     ty = ty.ravel()
     vy = vy.ravel()
 
-    clf = svm.SVC(verbose=True, max_iter=100, class_weight={0: 1, 1: 3})
+    print 'Training SVM'
+    clf = svm.SVC(verbose=True, max_iter=2000,
+                  class_weight={0: 1, 1: 3})
     clf.fit(tx, ty)
+    print 'SVM Trained'
 
-    probs = clf.predict_proba(vx)
-
-    yscore = probs[:, 1]
+    probs = clf.decision_function(vx)
+    # print probs
+    # yscore = probs[:, 1]
+    yscore = probs.ravel()
     fpr, tpr, thresh = roc_curve(vy, yscore)
 
-    thresh = np.percentile(probs[:, 1], 99)
-    pred = np.int32(probs[:, 1] >= thresh)
-    # for i in xrange(len(pred)):
-    #     id = np.int32(vyall[i,0])
-    #     if idtimes[id]-vyall[i,1] < 5*60*60:
-    #         pred[i] = 0
+    thresh = np.percentile(probs.ravel(), 99)
+    pred = np.int32(probs.ravel() >= thresh)
     print np.sum(pred)
 
     output = vyall.swapaxes(0, 1)
