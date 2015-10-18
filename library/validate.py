@@ -172,12 +172,12 @@ def validate(predfile, truefile):
     else:
         sensitivityScore = sensitivity
         specificityScore = (specificity - 0.99) * 100
-        if medianPredictionTime < 72*60*60:
+        if medianPredictionTime < 72:
             medianPredictionTimeClipped = medianPredictionTime
         else:
-            medianPredictionTimeClipped = 72*60*60
+            medianPredictionTimeClipped = 72
         medianPredictionTimeScore = (
-            float(medianPredictionTimeClipped) / (72*60*60.0))
+            float(medianPredictionTimeClipped) / 72)
         finalScore = (75 * sensitivityScore) + \
             (20 * medianPredictionTimeScore) + (5 * specificityScore)
     print "finalScore : ", finalScore
