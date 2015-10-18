@@ -74,8 +74,7 @@ def checkOnlyICUFlags(predictedData):
 def validate(predfile, truefile):
     predictedData = pa.read_csv(
         predfile,
-        dtype={'ID': np.int32, 'TIME': np.int32,
-               'ICU': np.int32, 'LABEL': np.int32}
+        dtype={'ID': np.int32, 'TIME': np.int32, 'LABEL': np.int32}
     )
 
     actualData = pa.read_csv(
@@ -98,14 +97,14 @@ def validate(predfile, truefile):
         maxTimes[i] = maxTime
 
     for i, row in enumerate(predictedData.iterrows()):
-        if (row[1]['ICU'] == 1 and row[1]['LABEL'] == 1):
+        if row[1]['LABEL'] == 1:
             finalPrediction[row[1]['ID']] = 1
-            if (row[1]['TIME'] > maxTimes[row[1]['ID']]):
-                maxTimes[row[1]['ID']] = row[1]['TIME']
             if (row[1]['TIME'] < minTimes[row[1]['ID']]):
                 minTimes[row[1]['ID']] = row[1]['TIME']
             if row[1]['ID'] not in finalPredictedTrue:
                 finalPredictedTrue.append(row[1]['ID'])
+        if (row[1]['TIME'] > maxTimes[row[1]['ID']]):
+            maxTimes[row[1]['ID']] = row[1]['TIME']
 
     predictionTime = {}
     for (x, i) in np.ndenumerate(ids):
@@ -147,13 +146,14 @@ def validate(predfile, truefile):
     # print predictionTimesList
 
     medianPredictionTime = np.median(np.asarray(predictionTimesList))
+    medianPredictionTime /= float(3600)
 
     print "sensitivity : ", sensitivity, ", specificity : ", specificity
     print "accuracy : ", accuracy,\
         "median prediction time : ", medianPredictionTime
     finalScore = 0
     if specificity < 0.99 or sensitivity == 0 or \
-            medianPredictionTime < 5 * 60 * 60:
+            medianPredictionTime < 5:
         print "specificity < 0.99 or sensitivity = 0\
             or medianPredictionTime < 5"
         finalScore = 0
