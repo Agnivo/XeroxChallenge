@@ -85,8 +85,8 @@ def getfeatures(
     traintargets.write('ID,TIME,LABEL,ICU\n')
     valtargets.write('ID,TIME,LABEL,ICU\n')
 
-    for i in xrange(641):
-        if i < 640:
+    for i in xrange(321):
+        if i < 320:
             trainfeats.write('feat{0},'.format(i))
             valfeats.write('feat{0},'.format(i))
         else:
@@ -106,20 +106,18 @@ def getfeatures(
         ilabs = np.asarray(ilabs)
 
         feat = [[0 for i in xrange(32)] for j in xrange(win)]
-        pres = [[0 for i in xrange(32)] for j in xrange(win)]
+        # pres = [[0 for i in xrange(32)] for j in xrange(win)]
 
         target = np.int32(labels[labels['ID'] == id]['LABEL'])[0]
         age = np.int32(ages[ages['ID'] == id]['AGE'])[0]
 
         for i in xrange(ivitals.shape[0]):
-            if target == 0 and i % 3 != 0:
-                continue
 
             time = ttime[id][i]
             icu = ticu[id][i]
 
             feat = feat[1:]
-            pres = pres[1:]
+            # pres = pres[1:]
 
             ttarget = 0
             if target == 1 and maxtime[id] - time <= 36000:
@@ -128,26 +126,32 @@ def getfeatures(
             # pres.append([0 for j in xrange(32)])
             # feat.append([0 for j in xrange(32)])
             feat.append(feat[-1])
-            pres.append(pres[-1])
+            # pres.append(pres[-1])
 
             for j in xrange(ivitals.shape[1]):
                 if not np.isnan(ivitals[i][j]):
                     feat[-1][j] = ivitals[i][j]
-                    pres[-1][j] = 1
+                    # pres[-1][j] = 1
 
             for j in xrange(ilabs.shape[1]):
                 if not np.isnan(ilabs[i][j]):
                     feat[-1][j + ivitals.shape[1]] = ilabs[i][j]
-                    pres[-1][j + ivitals.shape[1]] = 1
+                    # pres[-1][j + ivitals.shape[1]] = 1
 
             cfeat = np.asarray(feat).flatten()
-            cpres = np.asarray(pres).flatten()
+            # cpres = np.asarray(pres).flatten()
+
+            if target == 0 and i % 2 != 0:
+                continue
+
+            if target == 1 and ttarget == 0:
+                continue
 
             if folds[it] != valfold:
-                writecsvline(trainfeats, np.hstack((cfeat, cpres, [age])))
+                writecsvline(trainfeats, np.hstack((cfeat, [age])))
                 writecsvline(traintargets, [id, time, ttarget, icu])
             else:
-                writecsvline(valfeats, np.hstack((cfeat, cpres, [age])))
+                writecsvline(valfeats, np.hstack((cfeat, [age])))
                 writecsvline(valtargets, [id, time, ttarget, icu])
 
         if debug and id > 2:
