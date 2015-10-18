@@ -120,7 +120,7 @@ def getfeatures(
             # pres = pres[1:]
 
             ttarget = 0
-            if target == 1 and maxtime[id] - time <= 36000:
+            if target == 1 and maxtime[id] - time <= 10*60*60:
                 ttarget = 1
 
             # pres.append([0 for j in xrange(32)])
@@ -141,13 +141,12 @@ def getfeatures(
             cfeat = np.asarray(feat).flatten()
             # cpres = np.asarray(pres).flatten()
 
-            if target == 0 and i % 2 != 0:
-                continue
-
-            if target == 1 and ttarget == 0:
-                continue
+            # if target == 0 and i % 2 != 0:
+            #     continue
 
             if folds[it] != valfold:
+                if target == 1 and ttarget == 0:
+                    continue
                 writecsvline(trainfeats, np.hstack((cfeat, [age])))
                 writecsvline(traintargets, [id, time, ttarget, icu])
             else:

@@ -3,6 +3,7 @@ import theano as TH
 import theano.tensor as T
 import theano.printing as PP
 import numpy as np
+from sklearn.metrics import roc_auc_score
 
 
 def batch_iterable(
@@ -84,9 +85,14 @@ class nnet:
             self.reg += T.sum(par * par)
 
         self.loss = -(
-            1.0*self.target * T.log(self.output) +
-            0.1*(1 - self.target) * T.log(1 - self.output)
+            0.1*self.target * T.log(self.output) +
+            0.5*(1 - self.target) * T.log(1 - self.output)
         )
+
+        # self.loss = (self.target - self.output)
+        # self.loss = self.loss * self.loss
+        # self.loss = 5.0 * self.target * self.loss + \
+        #     1.0 * (1 - self.target) * self.loss
 
         self.loss = T.mean(self.loss) + lam * self.reg
 
@@ -146,17 +152,11 @@ class nnet:
             updates=None
         )
 
-        acc = 0.0
-        cnt = 0
-        for bx, by in batch_iterable(x, y, batch_size):
-            c_out, = self.tester(bx)
-            c_acc = np.mean(c_out[0] == by)
-            acc += c_acc
-            cnt += 1
+        c_out, = self.tester(x)
+        c_acc = roc_auc_score(y.ravel(), c_out.ravel())
 
-        acc /= cnt
-        print 'Mean accuracy = {0}'.format(acc)
-        return acc
+        print 'Mean auc = {0}'.format(c_acc)
+        return c_acc
 
     def getclass(self, x):
         self.tester = TH.function(
