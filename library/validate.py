@@ -1,7 +1,6 @@
 import pandas as pa
 import numpy as np
 import sys
-import statistics
 
 '''
     Usage : python validate.py Predicted.csv Training_Dataset/actualLabel.csv
@@ -84,7 +83,8 @@ def validate(predfile, truefile):
         dtype={'ID': np.int32, 'LABEL': np.int32}
     )
 
-    ids = np.asarray(predictedData['ID'])
+    ids = np.asarray(np.unique(np.asarray(predictedData['ID'])))
+
     minTime = np.max(np.asarray(predictedData['TIME'])) + 1
     maxTime = 0
     finalPrediction = {}
@@ -146,13 +146,14 @@ def validate(predfile, truefile):
             predictionTimesList.append(predictionTime[i])
     # print predictionTimesList
 
-    medianPredictionTime = statistics.median(predictionTimesList)
+    medianPredictionTime = np.median(np.asarray(predictionTimesList))
 
     print "sensitivity : ", sensitivity, ", specificity : ", specificity
     print "accuracy : ", accuracy,\
         "median prediction time : ", medianPredictionTime
     finalScore = 0
-    if specificity < 0.99 or sensitivity == 0 or medianPredictionTime < 5:
+    if specificity < 0.99 or sensitivity == 0 or \
+            medianPredictionTime < 5 * 60 * 60:
         print "specificity < 0.99 or sensitivity = 0\
             or medianPredictionTime < 5"
         finalScore = 0
@@ -162,12 +163,12 @@ def validate(predfile, truefile):
     elif checkAllPredicted(finalPrediction) == 1:
         print "All patients predicted as 1"
         finalScore = 0
-    elif checkAllICUFlags(predictedData) == 1:
-        print "For all examples with ICU Flag = 1, prediction = 1"
-        finalScore = 0
-    elif checkOnlyICUFlags(predictedData) == 1:
-        print "Only ICU flag == 1 examples have prediction = 1"
-        finalScore = 0
+    # elif checkAllICUFlags(predictedData) == 1:
+    #     print "For all examples with ICU Flag = 1, prediction = 1"
+    #     finalScore = 0
+    # elif checkOnlyICUFlags(predictedData) == 1:
+    #     print "Only ICU flag == 1 examples have prediction = 1"
+    #     finalScore = 0
     else:
         sensitivityScore = sensitivity
         specificityScore = (specificity - 0.99) * 100

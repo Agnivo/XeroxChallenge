@@ -34,20 +34,16 @@ def getfeatures(
     print 'Getting features...'
 
     vitals = pa.read_csv(
-        vital_file,
-        dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
+        vital_file
     )
     labs = pa.read_csv(
-        lab_file,
-        dtype={'ID': np.int32, 'TIME': np.int32}
+        lab_file
     )
     ages = pa.read_csv(
-        age_file,
-        dtype={'ID': np.int32, 'AGE': np.int32}
+        age_file
     )
     labels = pa.read_csv(
-        label_file,
-        dtype={'ID': np.int32, 'LABEL': np.int32}
+        label_file
     )
 
     win = 10
@@ -61,13 +57,17 @@ def getfeatures(
     tlabs = [[] for i in xrange(np.max(ids) + 1)]
     ttime = [[] for i in xrange(np.max(ids) + 1)]
     ticu = [[] for i in xrange(np.max(ids) + 1)]
+    maxtime = [0 for i in xrange(np.max(ids) + 1)]
 
     for i, row in enumerate(vitals.iterrows()):
-        tvitals[row[1]['ID'].astype(np.int32)].append(np.asarray(row[1][2:]))
-        ttime[row[1]['ID'].astype(np.int32)].\
+        id = row[1]['ID'].astype(np.int32)
+        tvitals[id].append(np.asarray(row[1][2:]))
+        ttime[id].\
             append(row[1]['TIME'].astype(np.int32))
-        ticu[row[1]['ID'].astype(np.int32)].\
+        ticu[id].\
             append(row[1]['ICU'].astype(np.int32))
+        maxtime[id] = \
+            max(maxtime[id], row[1]['TIME'].astype(np.int32))
         if i >= 100 and debug:
             break
 
@@ -112,14 +112,23 @@ def getfeatures(
         age = np.int32(ages[ages['ID'] == id]['AGE'])[0]
 
         for i in xrange(ivitals.shape[0]):
+            if target == 0 and i % 3 != 0:
+                continue
+
             time = ttime[id][i]
             icu = ticu[id][i]
 
             feat = feat[1:]
             pres = pres[1:]
 
-            pres.append([0 for j in xrange(32)])
-            feat.append([0 for j in xrange(32)])
+            ttarget = 0
+            if target == 1 and maxtime[id] - time <= 36000:
+                ttarget = 1
+
+            # pres.append([0 for j in xrange(32)])
+            # feat.append([0 for j in xrange(32)])
+            feat.append(feat[-1])
+            pres.append(pres[-1])
 
             for j in xrange(ivitals.shape[1]):
                 if not np.isnan(ivitals[i][j]):
@@ -136,10 +145,10 @@ def getfeatures(
 
             if folds[it] != valfold:
                 writecsvline(trainfeats, np.hstack((cfeat, cpres, [age])))
-                writecsvline(traintargets, [id, time, target, icu])
+                writecsvline(traintargets, [id, time, ttarget, icu])
             else:
                 writecsvline(valfeats, np.hstack((cfeat, cpres, [age])))
-                writecsvline(valtargets, [id, time, target, icu])
+                writecsvline(valtargets, [id, time, ttarget, icu])
 
         if debug and id > 2:
             break
@@ -151,7 +160,12 @@ def getfeatures(
 
 
 def main():
-    getfeatures()
+    getfeatures(
+        vital_file='Training_Dataset/vital_train.csv',
+        lab_file='Training_Dataset/lab_train.csv',
+        age_file='Training_Dataset/age_train.csv',
+        label_file='Training_Dataset/id_label_train.csv'
+    )
 
     # print tfeats.shape, ttargets.shape, vfeats.shape, vtargets.shape
     # print feats, targets
