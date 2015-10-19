@@ -168,6 +168,7 @@ def getfeatures2(
     age_file='Training_Dataset/id_age_train.csv',
     label_file='Training_Dataset/id_label_train.csv',
     prefix='',
+    full=False,
     valfold=0
 ):
     '''
@@ -243,24 +244,27 @@ def getfeatures2(
 
     trainfeats = open(prefix + 'train_feats.csv', 'w')
     traintargets = open(prefix + 'train_targets.csv', 'w')
-
-    valfeats = open(prefix + 'validation_feats.csv', 'w')
-    valtargets = open(prefix + 'validation_targets.csv', 'w')
-
     traintargets.write('ID,TIME,LABEL,ICU\n')
-    valtargets.write('ID,TIME,LABEL,ICU\n')
+
+    if not full:
+        valfeats = open(prefix + 'validation_feats.csv', 'w')
+        valtargets = open(prefix + 'validation_targets.csv', 'w')
+        valtargets.write('ID,TIME,LABEL,ICU\n')
 
     numfeats = 32 * 4 + 1
     for i in xrange(numfeats):
         if i < numfeats - 1:
             trainfeats.write('feat{0},'.format(i))
-            valfeats.write('feat{0},'.format(i))
+            if not full:
+                valfeats.write('feat{0},'.format(i))
         else:
             trainfeats.write('feat{0}'.format(i))
-            valfeats.write('feat{0}'.format(i))
+            if not full:
+                valfeats.write('feat{0}'.format(i))
 
     trainfeats.write('\n')
-    valfeats.write('\n')
+    if not full:
+        valfeats.write('\n')
 
     for it, id in enumerate(ids):
 
@@ -315,7 +319,7 @@ def getfeatures2(
             # if target == 0 and i % 2 != 0:
             #     continue
 
-            if folds[it] != valfold:
+            if folds[it] != valfold or full:
                 if target == 1 and ttarget == 0:
                     continue
                 writecsvline(trainfeats, np.hstack((cfeat, [age])))
@@ -329,16 +333,167 @@ def getfeatures2(
 
     trainfeats.close()
     traintargets.close()
-    valfeats.close()
-    valtargets.close()
+    if not full:
+        valfeats.close()
+        valtargets.close()
+
+
+def getfeatures3(
+    vital_file='Validation_Data/id_time_vitals_train.csv',
+    lab_file='Validation_Data/id_time_labs_train.csv',
+    age_file='Validation_Data/id_age_train.csv',
+    label_file='Validation_Data/id_label_train.csv',
+    prefix='val_'
+):
+    '''
+    Extracts window features from the given time series and
+    saves them to the respective csv files.
+
+    Training features and validation features contain 641 columns each
+    denoting the 641 features.
+    Training targets and validation targets contain 3 columns each for
+    'ID', 'TIME', 'LABEL' and 'ICU'
+
+    Further you might want to normalize the features so that their
+    values lie between 0, 1.
+
+    '''
+
+    print 'Getting features...'
+
+    vitals = pa.read_csv(
+        vital_file
+    )
+    labs = pa.read_csv(
+        lab_file
+    )
+    ages = pa.read_csv(
+        age_file
+    )
+
+    win = 10
+
+    ids = np.asarray(ages['ID'])
+
+    tvitals = [[] for i in xrange(np.max(ids) + 1)]
+    tlabs = [[] for i in xrange(np.max(ids) + 1)]
+    ttime = [[] for i in xrange(np.max(ids) + 1)]
+    ticu = [[] for i in xrange(np.max(ids) + 1)]
+    maxtime = [0 for i in xrange(np.max(ids) + 1)]
+
+    for i, row in enumerate(np.asarray(vitals)):
+        if i % 10000 == 0:
+            print 'Pre doing {}'.format(i)
+        id = row[0].astype(np.int32)
+        tvitals[id].append(row[2:])
+        ttime[id].\
+            append(row[1].astype(np.int32))
+        ticu[id].\
+            append(row[8].astype(np.int32))
+        maxtime[id] = \
+            max(maxtime[id], row[8].astype(np.int32))
+        if i >= 100 and debug:
+            break
+
+    for i, row in enumerate(np.asarray(labs)):
+        tlabs[row[0].astype(np.int32)].append(row[2:])
+        if i >= 100 and debug:
+            break
+
+    feat_means = [0.42314047,  0.34605021,  0.39641699,  0.24909875,
+                  0.95751403, 0.90797301, 0.81011303,
+                  0.92037061, 0.23100672, 0.18325522,
+                  0.66333616, 0.2702671, 0.41290092,
+                  0.61907069, 0.64277418, 0.47439935, 0.4450737,
+                  0.12507184, 0.45448799, 0.33454829, 0.30246278,
+                  0.48594847, 0.66892206, 0.51567691, 0.67519358,
+                  0.18367902, 0.65036754, 0.52432508, 0.47141823,
+                  0.56842463, 0.24820434, 0.2081694]
+
+    trainfeats = open(prefix + 'train_feats.csv', 'w')
+    traintargets = open(prefix + 'train_targets.csv', 'w')
+    traintargets.write('ID,TIME,ICU\n')
+
+    numfeats = 32 * 4 + 1
+    for i in xrange(numfeats):
+        if i < numfeats - 1:
+            trainfeats.write('feat{0},'.format(i))
+        else:
+            trainfeats.write('feat{0}'.format(i))
+
+    trainfeats.write('\n')
+
+    for it, id in enumerate(ids):
+
+        print 'Doing', id
+        ivitals = tvitals[id]
+        ilabs = tlabs[id]
+
+        ivitals = np.asarray(ivitals)
+        ilabs = np.asarray(ilabs)
+
+        feat = [[np.nan for i in xrange(32)] for j in xrange(win)]
+        # pres = [[0 for i in xrange(32)] for j in xrange(win)]
+
+        age = np.int32(ages[ages['ID'] == id]['AGE'])[0]
+
+        for i in xrange(ivitals.shape[0]):
+
+            time = ttime[id][i]
+            icu = ticu[id][i]
+
+            feat = feat[1:]
+            # pres = pres[1:]
+
+            feat.append(np.hstack((ivitals[i].ravel(), ilabs[i].ravel())))
+            for i in xrange(32):
+                if np.isnan(feat[-1][i]):
+                    feat[-1][i] = feat[-2][i]
+
+            cfeat = np.asarray(feat)
+
+            temp = []
+            for j in xrange(32):
+                t1 = [cfeat[9, j], np.nanmean(cfeat[:, j]),
+                      np.nanmin(cfeat[:, j]), np.nanmax(cfeat[:, j])]
+                if np.any(np.isnan(t1)):
+                    t1 = [
+                        feat_means[j], feat_means[j],
+                        feat_means[j], feat_means[j]
+                    ]
+                temp.append(t1)
+
+            cfeat = np.hstack(temp)
+
+            # cfeat = np.asarray(feat).flatten()
+            # cpres = np.asarray(pres).flatten()
+
+            # if target == 0 and i % 2 != 0:
+            #     continue
+
+            writecsvline(trainfeats, np.hstack((cfeat, [age])))
+            writecsvline(traintargets, [id, time, icu])
+
+        if debug and id > 2:
+            break
+
+    trainfeats.close()
+    traintargets.close()
 
 
 def main():
-    getfeatures2(
-        vital_file='Training_Dataset/vital_train.csv',
-        lab_file='Training_Dataset/lab_train.csv',
-        age_file='Training_Dataset/age_train.csv',
-        label_file='Training_Dataset/id_label_train.csv'
+    # getfeatures2(
+    #     vital_file='Training_Dataset/vital_train.csv',
+    #     lab_file='Training_Dataset/lab_train.csv',
+    #     age_file='Training_Dataset/age_train.csv',
+    #     label_file='Training_Dataset/id_label_train.csv'
+    # )
+
+    getfeatures3(
+        vital_file='Validation_Data/vital_train.csv',
+        lab_file='Validation_Data/lab_train.csv',
+        age_file='Validation_Data/age_train.csv',
+        prefix='val_'
     )
 
     # print tfeats.shape, ttargets.shape, vfeats.shape, vtargets.shape
