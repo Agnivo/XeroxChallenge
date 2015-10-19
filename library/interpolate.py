@@ -23,13 +23,13 @@ def writeCSV(fileObj, feats, columns):
     fileObj.close()
 
 
-def interpolate():
+def interpolate(vitalfile, labsfile):
     vitals = pa.read_csv(
-        sys.argv[1],
+        vitalfile,
         dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
     )
     labs = pa.read_csv(
-        sys.argv[2],
+        labsfile,
         dtype={'ID': np.int32, 'TIME': np.int32}
     )
 
@@ -76,7 +76,9 @@ def interpolate():
 
 
 def main():
-    interpolate()
+    vitalfile = sys.argv[1]
+    labsfile = sys.argv[2]
+    interpolate(vitalfile, labsfile)
 
 if __name__ == "__main__":
     main()
