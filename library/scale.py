@@ -185,27 +185,14 @@ def scale():
 
 def scaleval():
     vitals = pa.read_csv(
-        'Training_Dataset/id_time_vitals_train.csv',
-        dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
-    )
-    labs = pa.read_csv(
-        'Training_Dataset/id_time_labs_train.csv',
-        dtype={'ID': np.int32, 'TIME': np.int32}
-    )
-    ages = pa.read_csv(
-        'Training_Dataset/id_age_train.csv',
-        dtype={'ID': np.int32, 'AGE': np.int32}
-    )
-
-    valvitals = pa.read_csv(
         'Validation_Data/id_time_vitals_val.csv',
         dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
     )
-    vallabs = pa.read_csv(
+    labs = pa.read_csv(
         'Validation_Data/id_time_labs_val.csv',
         dtype={'ID': np.int32, 'TIME': np.int32}
     )
-    valages = pa.read_csv(
+    ages = pa.read_csv(
         'Validation_Data/id_age_val.csv',
         dtype={'ID': np.int32, 'AGE': np.int32}
     )
