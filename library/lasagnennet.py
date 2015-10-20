@@ -85,9 +85,9 @@ class nnet:
             self.reg += T.sum(par * par)
 
         self.loss = -(
-            0.1*self.target * T.log(self.output) +
-            0.5*(1 - self.target) * T.log(1 - self.output)
-        )
+            1*self.target * T.log(self.output) +
+            0.003*(1 - self.target) * T.log(1 - self.output)
+        ) * T.sqrt(self.output)
 
         # self.loss = (self.target - self.output)
         # self.loss = self.loss * self.loss
@@ -154,6 +154,8 @@ class nnet:
 
         c_out, = self.tester(x)
         c_acc = roc_auc_score(y.ravel(), c_out.ravel())
+
+        print c_out.ravel()
 
         print 'Mean auc = {0}'.format(c_acc)
         return c_acc
