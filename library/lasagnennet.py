@@ -85,15 +85,17 @@ class nnet:
             self.reg += T.sum(par * par)
 
         self.loss = -(
-            1*self.target * T.log(self.output) +
-            0.003*(1 - self.target) * T.log(1 - self.output)
-        ) * T.sqrt(self.output)
+            1 * self.target * T.log(self.output) +
+            0.005 * (1 - self.target) * T.log(1 - self.output)
+        )
 
         # self.loss = (self.target - self.output)
         # self.loss = self.loss * self.loss
         # self.loss = 5.0 * self.target * self.loss + \
         #     1.0 * (1 - self.target) * self.loss
 
+        self.loss1 = T.mean(self.loss * self.output * self.output) \
+            + lam * self.reg
         self.loss = T.mean(self.loss) + lam * self.reg
 
     def savemodel(self, filename):
@@ -140,6 +142,50 @@ class nnet:
                 c_acc = self.test(testx, testy, batch_size)
                 if acc < c_acc:
                     self.savemodel(filename)
+
+    def train2(
+        self, x, y, lrate, gamma, batch_size, iters,
+        test_batch=None,
+        testx=None, testy=None,
+        filename='model.npz',
+        change_iters=50
+    ):
+        print "Training ... "
+        outputs = [self.loss]
+        inputs = [self.input, self.target]
+
+        params = L.layers.get_all_params(self.output_layer, trainable=True)
+        updates = L.updates.nesterov_momentum(
+            self.loss, params, learning_rate=lrate, momentum=gamma)
+
+        self.trainer = TH.function(
+            inputs=inputs, outputs=outputs, updates=updates)
+
+        acc = 0.0
+        for i in xrange(iters):
+            tot_loss = 0.0
+            cnt = 0
+            for bx, by in batch_iterable(x, y, batch_size):
+                c_loss, = self.trainer(bx, by)
+                tot_loss += c_loss
+                cnt += 1
+            print "Iteration {0}, Loss = {1}".format(i, tot_loss / cnt)
+
+            if testx is None or testy is None:
+                testx = x
+                testy = y
+
+            if i % 10 == 0:
+                c_acc = self.test(testx, testy, batch_size)
+                if acc < c_acc:
+                    self.savemodel(filename)
+
+            if i == change_iters:
+                updates = L.updates.nesterov_momentum(
+                    self.loss1, params, learning_rate=lrate, momentum=gamma)
+
+                self.trainer = TH.function(
+                    inputs=inputs, outputs=outputs, updates=updates)
 
     def test(
         self, x, y, batch_size
