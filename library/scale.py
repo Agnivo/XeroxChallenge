@@ -12,7 +12,7 @@ def testCode():
 
 def writeCSV(fileObj, feats, columns):
     for i in xrange(len(columns)):
-        if i < len(columns)-1:
+        if i < len(columns) - 1:
             fileObj.write(str(columns[i]) + ",")
         else:
             fileObj.write(str(columns[i]))
@@ -46,7 +46,7 @@ def scale():
         'Validation_Data/id_time_vitals_val.csv',
         dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
     )
-    
+
     vallabs = pa.read_csv(
         'Validation_Data/id_time_labs_val.csv',
         dtype={'ID': np.int32, 'TIME': np.int32}
@@ -64,7 +64,8 @@ def scale():
     valvitalFeats = {}
     for vitalColumn in vitalColumns:
         vitalFeats[vitalColumn] = np.asarray(vitals[vitalColumn]).tolist()
-        valvitalFeats[vitalColumn] = np.asarray(valvitals[vitalColumn]).tolist()
+        valvitalFeats[vitalColumn] = np.asarray(
+            valvitals[vitalColumn]).tolist()
 
     labColumns = [str(labs.columns[i]) for i in xrange(labs.columns.size)]
     print labColumns
@@ -226,7 +227,7 @@ def scale():
 
     vitalFeatsFile = open("Training_Dataset/vital_train.csv", 'w')
     writeCSV(vitalFeatsFile, vitalFeats, vitalColumns)
-    
+
     # Changes
     valageFeatsFile = open("Validation_Data/age_train.csv", 'w')
     writeCSV(valageFeatsFile, valageFeats, ageColumns)
@@ -236,6 +237,7 @@ def scale():
 
     valvitalFeatsFile = open("Validation_Data/vital_train.csv", 'w')
     writeCSV(valvitalFeatsFile, valvitalFeats, vitalColumns)
+
 
 def main():
     if debug is True:
