@@ -132,7 +132,7 @@ def getfeatures1(
             # pres = pres[1:]
 
             ttarget = 0
-            if target == 1 and maxtime[id] - time <= 5 * 60 * 60:
+            if target == 1:  # and maxtime[id] - time <= 20 * 60 * 60:
                 ttarget = 1
 
             # pres.append([0 for j in xrange(32)])
@@ -438,7 +438,7 @@ def getfeatures2(
             # pres = pres[1:]
 
             ttarget = 0
-            if target == 1 and maxtime[id] - time <= 10 * 60 * 60:
+            if target == 1:  # and maxtime[id] - time <= 10 * 60 * 60:
                 ttarget = 1
 
             feat.append(np.hstack((ivitals[i].ravel(), ilabs[i].ravel())))
@@ -630,14 +630,14 @@ def getfeatures3(
 
 
 def main():
-    getfeatures1(
-        vital_file='Training_Dataset/vital_train.csv',
-        lab_file='Training_Dataset/lab_train.csv',
-        age_file='Training_Dataset/age_train.csv',
-        label_file='Training_Dataset/id_label_train.csv',
-        prefix='win2_',
-        valfold=1
-    )
+    # getfeatures1(
+    #     vital_file='Training_Dataset/vital_train.csv',
+    #     lab_file='Training_Dataset/lab_train.csv',
+    #     age_file='Training_Dataset/age_train.csv',
+    #     label_file='Training_Dataset/id_label_train.csv',
+    #     prefix='win2_',
+    #     valfold=1
+    # )
 
     # getfeatures12(
     #     vital_file='Validation_Data/vital_train.csv',
@@ -646,12 +646,14 @@ def main():
     #     prefix='win_val_'
     # )
 
-    # getfeatures2(
-    #     vital_file='Training_Dataset/vital_train.csv',
-    #     lab_file='Training_Dataset/lab_train.csv',
-    #     age_file='Training_Dataset/age_train.csv',
-    #     label_file='Training_Dataset/id_label_train.csv'
-    # )
+    getfeatures2(
+        vital_file='Training_Dataset/vital_train.csv',
+        lab_file='Training_Dataset/lab_train.csv',
+        age_file='Training_Dataset/age_train.csv',
+        label_file='Training_Dataset/id_label_train.csv',
+        full=True,
+        prefix='full2_'
+    )
 
     # getfeatures3(
     #     vital_file='Validation_Data/vital_train.csv',
