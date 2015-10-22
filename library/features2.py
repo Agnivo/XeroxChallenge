@@ -15,7 +15,8 @@ def getfeatures1(
     age_file='Training_Dataset/id_age_train.csv',
     label_file='Training_Dataset/id_label_train.csv',
     prefix='',
-    valfold=0
+    valfold=0,
+    full=False
 ):
     '''
     Extracts window features from the given time series and
@@ -156,7 +157,7 @@ def getfeatures1(
             # if target == 0 and i % 2 != 0:
             #     continue
 
-            if folds[it] != valfold:
+            if folds[it] != valfold or full:
                 if target == 1 and ttarget == 0:
                     continue
                 writecsvline(trainfeats, np.hstack((cfeat, [age])))
@@ -636,24 +637,25 @@ def main():
     #     age_file='Training_Dataset/age_train.csv',
     #     label_file='Training_Dataset/id_label_train.csv',
     #     prefix='win2_',
-    #     valfold=1
+    #     valfold=1,
+    #     full=True
     # )
 
-    # getfeatures12(
-    #     vital_file='Validation_Data/vital_train.csv',
-    #     lab_file='Validation_Data/lab_train.csv',
-    #     age_file='Validation_Data/age_train.csv',
-    #     prefix='win_val_'
-    # )
-
-    getfeatures2(
-        vital_file='Training_Dataset/vital_train.csv',
-        lab_file='Training_Dataset/lab_train.csv',
-        age_file='Training_Dataset/age_train.csv',
-        label_file='Training_Dataset/id_label_train.csv',
-        full=True,
-        prefix='full2_'
+    getfeatures12(
+        vital_file='Validation_Data/vital_train.csv',
+        lab_file='Validation_Data/lab_train.csv',
+        age_file='Validation_Data/age_train.csv',
+        prefix='win_val_'
     )
+
+    # getfeatures2(
+    #     vital_file='Training_Dataset/vital_train.csv',
+    #     lab_file='Training_Dataset/lab_train.csv',
+    #     age_file='Training_Dataset/age_train.csv',
+    #     label_file='Training_Dataset/id_label_train.csv',
+    #     full=True,
+    #     prefix='full2_'
+    # )
 
     # getfeatures3(
     #     vital_file='Validation_Data/vital_train.csv',
