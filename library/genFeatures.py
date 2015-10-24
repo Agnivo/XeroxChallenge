@@ -79,15 +79,7 @@ def generateFeatures(
         if i >= 100 and debug:
             break
 
-    featMeans = [0.42314047,  0.34605021,  0.39641699,  0.24909875,
-                 0.95751403, 0.90797301, 0.81011303,
-                 0.92037061, 0.23100672, 0.18325522,
-                 0.66333616, 0.2702671, 0.41290092,
-                 0.61907069, 0.64277418, 0.47439935, 0.4450737,
-                 0.12507184, 0.45448799, 0.33454829, 0.30246278,
-                 0.48594847, 0.66892206, 0.51567691, 0.67519358,
-                 0.18367902, 0.65036754, 0.52432508, 0.47141823,
-                 0.56842463, 0.24820434, 0.2081694]
+    featMeans = [0.5 for i in xrange(32)]
 
     allFeats = []
     idCount = 0
@@ -141,23 +133,23 @@ def generateFeatures(
                 if np.isnan(row) == 0:
                     knownVal = row
             if np.isnan(ts[Columns[i]].loc[
-             timeStamps[ts[Columns[i]].size - 1]]):
+                    timeStamps[ts[Columns[i]].size - 1]]):
                 ts[Columns[i]].loc[timeStamps[
-                 ts[Columns[i]].size - 1]] = knownVal
+                    ts[Columns[i]].size - 1]] = knownVal
             if debug is True:
                 print "Series interpolated (first nan to mean and last nan)."
                 print ts[Columns[i]]
             if (ts[Columns[i]].size - ts[Columns[i]].isnull().sum()) == 3:
                 ts[Columns[i]] = ts[Columns[i]].interpolate(
-                 method=method, order=2)
+                    method=method, order=2)
             elif (ts[Columns[i]].size - ts[Columns[i]].isnull().sum()) == 2:
                 ts[Columns[i]] = ts[Columns[i]].interpolate(
-                 method=method, order=1)
+                    method=method, order=1)
             elif (ts[Columns[i]].size - ts[Columns[i]].isnull().sum()) == 1:
                 ts[Columns[i]] = ts[Columns[i]].fillna(featMeans[i])
             else:
                 ts[Columns[i]] = ts[Columns[i]].interpolate(
-                 method=method, order=order)
+                    method=method, order=order)
             if debug is True:
                 print "Series after interpolation"
                 print ts[Columns[i]]
@@ -200,7 +192,7 @@ def generateFeatures(
             feats.append(idAges[id])
             if len(feats) != 129:
                 print "Error in features : Length : ", len(feats),\
-                 ", features : ", feats
+                    ", features : ", feats
             allFeats.append(feats)
             j += 1
         if debug is True:
