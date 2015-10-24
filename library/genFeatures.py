@@ -89,9 +89,16 @@ def generateFeatures(
     allFeats = []
     allTargets = []
     idCount = 0
+
+    then = time.time()
+
     for id in ids:
         print 'Feature Computed for ', idCount, ' users'
         idCount += 1
+        print 'Time remaining {} mins'.format(
+            ((time.time() - then) * 1.0
+             / idCount * (3600 - idCount)) / 60
+        )
         times = []
         for timestamp in ttime[id]:
             times.append(datetime.datetime.fromtimestamp(float(timestamp)))
