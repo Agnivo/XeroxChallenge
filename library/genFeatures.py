@@ -19,10 +19,10 @@ def writecsvline(trainfeats, allFeats):
 
 
 def generateFeatures(
-    vital_file='../Training_Dataset/id_time_vitals_train.csv',
-    lab_file='../Training_Dataset/id_time_labs_train.csv',
-    age_file='../Training_Dataset/id_age_train.csv',
-    label_file='../Training_Dataset/id_label_train.csv',
+    vital_file='./Training_Dataset/id_time_vitals_train.csv',
+    lab_file='./Training_Dataset/id_time_labs_train.csv',
+    age_file='./Training_Dataset/id_age_train.csv',
+    label_file='./Training_Dataset/id_label_train.csv',
     method='spline',
     order=3,
     prefix=''
@@ -90,8 +90,7 @@ def generateFeatures(
     allTargets = []
     idCount = 0
     for id in ids:
-        if idCount % 10000 == 0:
-            print 'Feature Computed for ', idCount, ' users'
+        print 'Feature Computed for ', idCount, ' users'
         idCount += 1
         times = []
         for timestamp in ttime[id]:
@@ -198,10 +197,10 @@ def generateFeatures(
             feats.append(idAges[id])
             if len(feats) != 129:
                 print "Error in features : Length : ", len(feats),\
-                 ", features : ", feats
+                    ", features : ", feats
             targets = []
             targets.append(id.astype(np.int32))
-            targets.append(time.mktime(timeStamp.timetuple()).astype(np.int32))
+            targets.append(np.int32(time.mktime(timeStamp.timetuple())))
             if idLabels[id] == 1:
                 targets.append(1)
             else:
@@ -227,10 +226,14 @@ def generateFeatures(
     traintargets = open(prefix + 'train_targets.csv', 'w')
     traintargets.write('ID,TIME,LABEL,ICU\n')
     writecsvline(traintargets, allTargets)
-    
+
 
 def main():
-    generateFeatures()
+    generateFeatures(
+        vital_file='./Training_Dataset/scaled_vitals_train.csv',
+        lab_file='./Training_Dataset/scaled_labs_train.csv',
+        prefix='./Training_Dataset/'
+    )
 
 
 if __name__ == "__main__":
