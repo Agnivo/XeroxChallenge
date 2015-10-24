@@ -2,6 +2,7 @@ import pandas as pa
 import numpy as np
 # import math
 import datetime
+import time
 
 
 debug = False
@@ -36,14 +37,18 @@ def generateFeatures(
     ages = pa.read_csv(
         age_file
     )
-    # labels = pa.read_csv(
-    #     label_file
-    # )
+    labels = pa.read_csv(
+        label_file
+    )
 
     ids = np.asarray(np.unique(np.asarray(vitals['ID'])))
     idAges = {}
     for i, row in enumerate(np.asarray(ages)):
         idAges[row[0].astype(np.int32)] = row[1].astype(
+            np.int32)
+    idLabels = {}
+    for i, row in enumerate(np.asarray(labels)):
+        idLabels[row[0].astype(np.int32)] = row[1].astype(
             np.int32)
     vitalColumns = []
     for i in xrange(vitals.columns.size):
@@ -82,6 +87,7 @@ def generateFeatures(
     featMeans = [0.5 for i in xrange(32)]
 
     allFeats = []
+    allTargets = []
     idCount = 0
     for id in ids:
         if idCount % 10000 == 0:
@@ -192,8 +198,17 @@ def generateFeatures(
             feats.append(idAges[id])
             if len(feats) != 129:
                 print "Error in features : Length : ", len(feats),\
-                    ", features : ", feats
+                 ", features : ", feats
+            targets = []
+            targets.append(id.astype(np.int32))
+            targets.append(time.mktime(timeStamp.timetuple()).astype(np.int32))
+            if idLabels[id] == 1:
+                targets.append(1)
+            else:
+                targets.append(0)
+            targets.append(ts['ICU'].loc[timeStamp].astype(np.int32))
             allFeats.append(feats)
+            allTargets.append(targets)
             j += 1
         if debug is True:
             for i in range(len(timeStamps)):
@@ -209,10 +224,10 @@ def generateFeatures(
 
     trainfeats.write('\n')
     writecsvline(trainfeats, allFeats)
-    # traintargets = open(prefix + 'train_targets.csv', 'w')
-
-    # traintargets.write('ID,TIME,LABEL,ICU\n')
-
+    traintargets = open(prefix + 'train_targets.csv', 'w')
+    traintargets.write('ID,TIME,LABEL,ICU\n')
+    writecsvline(traintargets, allTargets)
+    
 
 def main():
     generateFeatures()
