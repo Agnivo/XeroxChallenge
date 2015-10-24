@@ -438,7 +438,7 @@ def getfeatures2(
             # pres = pres[1:]
 
             ttarget = 0
-            if target == 1 and maxtime[id] - time <= 10 * 60 * 60:
+            if target == 1:  # and maxtime[id] - time <= 10 * 60 * 60:
                 ttarget = 1
 
             feat.append(np.hstack((ivitals[i].ravel(), ilabs[i].ravel())))
