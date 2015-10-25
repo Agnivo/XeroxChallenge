@@ -138,5 +138,5 @@ def main(filein, fileout):
             f.write('\n')
 
 if __name__ == '__main__':
-    main('Validation_Data/id_time_labs_val.csv',
-         'Validation_Data/scaled_labs_val.csv')
+    main('Test_Data/id_time_labs_test.csv',
+         'Test_Data/scaled_labs_test.csv')

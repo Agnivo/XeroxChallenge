@@ -340,7 +340,7 @@ def generateTestFeatures(
         idCount += 1
         print 'Time remaining {} mins'.format(
             ((time.time() - then) * 1.0
-             / idCount * (300 - idCount)) / 60
+             / idCount * (1300 - idCount)) / 60
         )
         times = []
         dictFeatures = {}
@@ -521,10 +521,10 @@ def main():
     #     prefix='./Training_Dataset/v2_'
     # )
     generateTestFeatures(
-        vital_file='./Validation_Data/scaled_vitals_val.csv',
-        lab_file='./Validation_Data/scaled_labs_val.csv',
-        age_file='./Validation_Data/id_age_val.csv',
-        prefix='./Validation_Data/'
+        vital_file='./Test_Data/scaled_vitals_test.csv',
+        lab_file='./Test_Data/scaled_labs_test.csv',
+        age_file='./Test_Data/id_age_test.csv',
+        prefix='./Test_Data/'
     )
 
 if __name__ == "__main__":

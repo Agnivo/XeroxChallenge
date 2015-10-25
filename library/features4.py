@@ -357,7 +357,6 @@ def getfeatures2(
     tlabs = [[] for i in xrange(np.max(ids) + 1)]
     ttime = [[] for i in xrange(np.max(ids) + 1)]
     ticu = [[] for i in xrange(np.max(ids) + 1)]
-    maxtime = [0 for i in xrange(np.max(ids) + 1)]
 
     for i, row in enumerate(np.asarray(vitals)):
         if i % 10000 == 0:
@@ -368,8 +367,6 @@ def getfeatures2(
             append(row[1].astype(np.int32))
         ticu[id].\
             append(row[8].astype(np.int32))
-        maxtime[id] = \
-            max(maxtime[id], row[8].astype(np.int32))
         if i >= 100 and debug:
             break
 
@@ -378,15 +375,7 @@ def getfeatures2(
         if i >= 100 and debug:
             break
 
-    feat_means = [0.42314047,  0.34605021,  0.39641699,  0.24909875,
-                  0.95751403, 0.90797301, 0.81011303,
-                  0.92037061, 0.23100672, 0.18325522,
-                  0.66333616, 0.2702671, 0.41290092,
-                  0.61907069, 0.64277418, 0.47439935, 0.4450737,
-                  0.12507184, 0.45448799, 0.33454829, 0.30246278,
-                  0.48594847, 0.66892206, 0.51567691, 0.67519358,
-                  0.18367902, 0.65036754, 0.52432508, 0.47141823,
-                  0.56842463, 0.24820434, 0.2081694]
+    feat_means = [0.5 for i in xrange(32)]
 
     trainfeats = open(prefix + 'train_feats.csv', 'w')
     traintargets = open(prefix + 'train_targets.csv', 'w')
@@ -546,15 +535,7 @@ def getfeatures3(
         if i >= 100 and debug:
             break
 
-    feat_means = [0.42314047,  0.34605021,  0.39641699,  0.24909875,
-                  0.95751403, 0.90797301, 0.81011303,
-                  0.92037061, 0.23100672, 0.18325522,
-                  0.66333616, 0.2702671, 0.41290092,
-                  0.61907069, 0.64277418, 0.47439935, 0.4450737,
-                  0.12507184, 0.45448799, 0.33454829, 0.30246278,
-                  0.48594847, 0.66892206, 0.51567691, 0.67519358,
-                  0.18367902, 0.65036754, 0.52432508, 0.47141823,
-                  0.56842463, 0.24820434, 0.2081694]
+    feat_means = [0.5 for i in xrange(32)]
 
     trainfeats = open(prefix + 'train_feats.csv', 'w')
     traintargets = open(prefix + 'train_targets.csv', 'w')
@@ -655,7 +636,7 @@ def main():
     #     age_file='Training_Dataset/age_train.csv',
     #     label_file='Training_Dataset/id_label_train.csv',
     #     full=True,
-    #     prefix='full3_'
+    #     prefix='Training_Dataset/full3_'
     # )
 
     getfeatures3(
