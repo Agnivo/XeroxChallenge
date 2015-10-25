@@ -23,7 +23,7 @@ def generateFeatures(
     lab_file='./Training_Dataset/id_time_labs_train.csv',
     age_file='./Training_Dataset/id_age_train.csv',
     label_file='./Training_Dataset/id_label_train.csv',
-    method='spline',
+    method='linear',
     order=3,
     prefix=''
 ):
@@ -224,11 +224,12 @@ def generateFeatures(
                 targets.append(0)
             targets.append(ts['ICU'].loc[timeStamp].astype(np.int32))
             tempFeats.append(feats)
-            if timeStamp in ttimeset[id]:
+            if True:  # timeStamp in ttimeset[id]:
                 allFeats.append(feats)
                 allTargets.append(targets)
             else:
-                print timeStamp, "- time not in user with id", id
+                # print timeStamp, "- time not in user with id", id
+                pass
             j += 1
         if debug is True:
             j = 0
@@ -258,7 +259,7 @@ def main():
     generateFeatures(
         vital_file='./Training_Dataset/scaled_vitals_train.csv',
         lab_file='./Training_Dataset/scaled_labs_train.csv',
-        prefix='./Training_Dataset/'
+        prefix='./Training_Dataset/v2_'
     )
 
 
