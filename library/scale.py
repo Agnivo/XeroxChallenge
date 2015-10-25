@@ -43,16 +43,16 @@ def scale():
     )
 
     valvitals = pa.read_csv(
-        'Validation_Data/id_time_vitals_val.csv',
+        'Test_Data/id_time_vitals_test.csv',
         dtype={'ID': np.int32, 'TIME': np.int32, 'ICU': np.int32}
     )
 
     vallabs = pa.read_csv(
-        'Validation_Data/id_time_labs_val.csv',
+        'Test_Data/id_time_labs_test.csv',
         dtype={'ID': np.int32, 'TIME': np.int32}
     )
     valages = pa.read_csv(
-        'Validation_Data/id_age_val.csv',
+        'Test_Data/id_age_test.csv',
         dtype={'ID': np.int32, 'AGE': np.int32}
     )
 
@@ -229,13 +229,13 @@ def scale():
     writeCSV(vitalFeatsFile, vitalFeats, vitalColumns)
 
     # Changes
-    valageFeatsFile = open("Validation_Data/age_train.csv", 'w')
+    valageFeatsFile = open("Test_Data/age_train.csv", 'w')
     writeCSV(valageFeatsFile, valageFeats, ageColumns)
 
-    vallabFeatsFile = open("Validation_Data/lab_train.csv", 'w')
+    vallabFeatsFile = open("Test_Data/lab_train.csv", 'w')
     writeCSV(vallabFeatsFile, vallabFeats, labColumns)
 
-    valvitalFeatsFile = open("Validation_Data/vital_train.csv", 'w')
+    valvitalFeatsFile = open("Test_Data/vital_train.csv", 'w')
     writeCSV(valvitalFeatsFile, valvitalFeats, vitalColumns)
 
 

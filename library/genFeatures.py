@@ -336,7 +336,7 @@ def generateTestFeatures(
     exampleCount = 0
     for id in ids:
         print 'Feature Computed for ', idCount, ' users and ',\
-         exampleCount, 'examples'
+            exampleCount, 'examples'
         idCount += 1
         print 'Time remaining {} mins'.format(
             ((time.time() - then) * 1.0
@@ -521,6 +521,9 @@ def main():
     #     prefix='./Training_Dataset/v2_'
     # )
     generateTestFeatures(
+        vital_file='./Validation_Data/scaled_vitals_val.csv',
+        lab_file='./Validation_Data/scaled_labs_val.csv',
+        age_file='./Validation_Data/id_age_val.csv',
         prefix='./Validation_Data/'
     )
 

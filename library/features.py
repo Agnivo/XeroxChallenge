@@ -630,14 +630,14 @@ def getfeatures3(
 
 
 def main():
-    getfeatures1(
-        vital_file='Training_Dataset/vital_train.csv',
-        lab_file='Training_Dataset/lab_train.csv',
-        age_file='Training_Dataset/age_train.csv',
-        label_file='Training_Dataset/id_label_train.csv',
-        prefix='win_',
-        valfold=1
-    )
+    # getfeatures1(
+    #     vital_file='Training_Dataset/vital_train.csv',
+    #     lab_file='Training_Dataset/lab_train.csv',
+    #     age_file='Training_Dataset/age_train.csv',
+    #     label_file='Training_Dataset/id_label_train.csv',
+    #     prefix='win_',
+    #     valfold=1
+    # )
 
     # getfeatures12(
     #     vital_file='Validation_Data/vital_train.csv',
@@ -653,12 +653,12 @@ def main():
     #     label_file='Training_Dataset/id_label_train.csv'
     # )
 
-    # getfeatures3(
-    #     vital_file='Validation_Data/vital_train.csv',
-    #     lab_file='Validation_Data/lab_train.csv',
-    #     age_file='Validation_Data/age_train.csv',
-    #     prefix='val_'
-    # )
+    getfeatures3(
+        vital_file='Test_Data/vital_train.csv',
+        lab_file='Test_Data/lab_train.csv',
+        age_file='Test_Data/age_train.csv',
+        prefix='test_'
+    )
 
 if __name__ == '__main__':
     main()

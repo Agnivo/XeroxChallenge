@@ -83,5 +83,5 @@ def main(filein, fileout):
 
 
 if __name__ == '__main__':
-    main('Training_Dataset/id_time_vitals_train.csv',
-         'Training_Dataset/scaled_vitals_train.csv')
+    main('Validation_Data/id_time_vitals_val.csv',
+         'Validation_Data/scaled_vitals_val.csv')
