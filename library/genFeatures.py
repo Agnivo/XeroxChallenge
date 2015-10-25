@@ -62,6 +62,7 @@ def generateFeatures(
     tvitals = [[] for i in xrange(np.max(ids) + 1)]
     tlabs = [[] for i in xrange(np.max(ids) + 1)]
     ttime = [[] for i in xrange(np.max(ids) + 1)]
+    ttimeset = [set() for i in xrange(np.max(ids) + 1)]
     ticu = [[] for i in xrange(np.max(ids) + 1)]
     maxtime = [0 for i in xrange(np.max(ids) + 1)]
 
@@ -72,16 +73,21 @@ def generateFeatures(
         tvitals[id].append(row[2:])
         ttime[id].\
             append(row[1].astype(np.int32))
+        currTime = datetime.datetime.fromtimestamp(float(row[1]))
+        currTime -= datetime.datetime.fromtimestamp(0)
+        currTime += datetime.datetime.fromtimestamp(-1800)
+        currTime = currTime.replace(minute=0, second=0)
+        ttimeset[id].add(currTime)
         ticu[id].\
             append(row[8].astype(np.int32))
         maxtime[id] = \
             max(maxtime[id], row[1].astype(np.int32))
-        if i >= 100 and debug:
+        if i >= 220 and debug:
             break
 
     for i, row in enumerate(np.asarray(labs)):
         tlabs[row[0].astype(np.int32)].append(row[2:])
-        if i >= 100 and debug:
+        if i >= 220 and debug:
             break
 
     featMeans = [0.5 for i in xrange(32)]
@@ -101,7 +107,10 @@ def generateFeatures(
         )
         times = []
         for timestamp in ttime[id]:
-            times.append(datetime.datetime.fromtimestamp(float(timestamp)))
+            currTime = datetime.datetime.fromtimestamp(float(timestamp))
+            currTime -= datetime.datetime.fromtimestamp(0)
+            currTime += datetime.datetime.fromtimestamp(-1800)
+            times.append(currTime)
         dictFeatures = {}
         for i in range(len(vitalColumns)):
             dictFeatures[vitalColumns[i]] = []
@@ -166,6 +175,7 @@ def generateFeatures(
                 print "Series after interpolation"
                 print ts[Columns[i]]
         j = 0
+        tempFeats = []
         for timeStamp in timeStamps:
             feats = []
             sample = {}
@@ -178,12 +188,12 @@ def generateFeatures(
             elif j < 10:
                 for i in range(j):
                     for s in range(len(Columns)):
-                        sample[Columns[s]].append(allFeats[i][s])
+                        sample[Columns[s]].append(tempFeats[i][s])
             else:
                 i = j - 10
                 while i < j:
                     for s in range(len(Columns)):
-                        sample[Columns[s]].append(allFeats[i][s])
+                        sample[Columns[s]].append(tempFeats[i][s])
                     i += 1
             meanVals = {}
             maxVals = {}
@@ -207,19 +217,28 @@ def generateFeatures(
                     ", features : ", feats
             targets = []
             targets.append(id.astype(np.int32))
-            targets.append(np.int32(time.mktime(timeStamp.timetuple())))
+            targets.append(np.int32(time.mktime(timeStamp.timetuple()) + 1800))
             if idLabels[id] == 1:
                 targets.append(1)
             else:
                 targets.append(0)
             targets.append(ts['ICU'].loc[timeStamp].astype(np.int32))
-            allFeats.append(feats)
-            allTargets.append(targets)
+            tempFeats.append(feats)
+            if timeStamp in ttimeset[id]:
+                allFeats.append(feats)
+                allTargets.append(targets)
+            else:
+                print timeStamp, "- time not in user with id", id
             j += 1
         if debug is True:
+            j = 0
             for i in range(len(timeStamps)):
-                print timeStamps[i], allFeats[i]
-            break
+                print timeStamps[i]
+                if timeStamps[i] in ttimeset[id]:
+                    print allFeats[j]
+                    j += 1
+            if id == 2:
+                break
 
     trainfeats = open(prefix + 'train_feats.csv', 'w')
     for i in xrange(129):
